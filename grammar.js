@@ -185,7 +185,9 @@ module.exports = grammar({
 
   supertypes: ($) => [],
 
-  inline: ($) => [],
+  inline: ($) => [
+    $.parentesized_expression,
+  ],
 
   conflicts: ($) => [],
 
@@ -361,10 +363,7 @@ module.exports = grammar({
 
     break_statement: ($) => seq($.BREAK_KEYWORD, optional(';')),
 
-    execute_statement: ($) => choice(
-      seq(keyword('выполнить', 'execute'), $.expression, optional(';')),
-      seq(keyword('выполнить', 'execute'), '(', $.expression, ')', optional(';')),
-    ),
+    execute_statement: ($) => seq(keyword('выполнить', 'execute'), $.expression, optional(';')),
 
     goto_statement: ($) =>
       seq($.GOTO_KEYWORD, '~', $.identifier, optional(';')),
@@ -389,6 +388,7 @@ module.exports = grammar({
       choice(
         alias($._const_value, $.const_expression),
         $.identifier,
+        $.parentesized_expression,
         $.unary_expression,
         $.binary_expression,
         $.ternary_expression,
@@ -399,6 +399,14 @@ module.exports = grammar({
         $.property_access,
         $.await_expression,
       ),
+
+    parentesized_expression: ($) =>
+      prec(100,
+      seq(
+        '(',
+        $.expression,
+        ')',
+      )),
 
     unary_expression: ($) =>
       prec.left(

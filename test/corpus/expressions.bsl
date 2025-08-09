@@ -233,6 +233,24 @@
             (number)))))))
 
 ================
+Выражение в скобках
+================
+Пусто = (Количество = 0)
+---
+(source_file
+  (assignment_statement
+    (identifier)
+    (expression
+      (expression
+        (binary_expression
+          (expression
+            (identifier))
+          (operator)
+          (expression
+            (const_expression
+              (number))))))))
+
+================
 Тернарный оператор
 ================
 А = ?(А, 1, 2);
