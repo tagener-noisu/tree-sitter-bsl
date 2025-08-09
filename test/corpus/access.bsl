@@ -70,3 +70,43 @@ a = А.Б.В.Г[3];
         (index
           (const_expression
             (number)))))))
+
+================
+Ключевое слово в свойстве
+================
+
+Если ЗначениеЗаполнено(ДополнительныеПараметры.Возврат) Тогда
+  Запрос.Выполнить();
+  Возврат ДополнительныеПараметры.Возврат;
+КонецЕсли;
+
+---
+
+(source_file
+  (if_statement
+    (IF_KEYWORD)
+    (expression
+      (method_call
+        (identifier)
+        (arguments
+          (expression
+            (property_access
+              (access
+                (identifier))
+              (property))))))
+    (THEN_KEYWORD)
+    (call_statement
+      (call_expression
+        (access
+          (identifier))
+        (method_call
+          (identifier)
+          (arguments))))
+    (return_statement
+      (RETURN_KEYWORD)
+      (expression
+        (property_access
+          (access
+            (identifier))
+          (property))))
+    (ENDIF_KEYWORD)))

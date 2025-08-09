@@ -187,6 +187,7 @@ module.exports = grammar({
 
   inline: ($) => [
     $.parentesized_expression,
+    $.any_identifier,
   ],
 
   conflicts: ($) => [],
@@ -195,6 +196,7 @@ module.exports = grammar({
 
   reserved: {
     global: ($) => reservedKeywords($),
+    none: $ => [],
   },
   rules: {
     source_file: ($) => repeat($._definition),
@@ -476,6 +478,8 @@ module.exports = grammar({
     property_access: ($) =>
       prec(PREC.ACCESS, choice($._access_property, $._access_index)),
 
+    any_identifier: ($) => alias(reserved('none', $.identifier), $.identifier),
+
     access: ($) =>
       prec(
         1,
@@ -490,7 +494,7 @@ module.exports = grammar({
     _access_call: ($) => seq($.access, '.', $.method_call),
     _access_index: ($) => seq($.access, '[', alias($.expression, $.index), ']'),
     _access_property: ($) =>
-      seq($.access, '.', alias($.identifier, $.property)),
+      seq($.access, '.', alias($.any_identifier, $.property)),
 
     method_call: ($) =>
       prec(

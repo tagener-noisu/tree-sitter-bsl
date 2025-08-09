@@ -2248,10 +2248,6 @@
     "named": true
   },
   {
-    "type": "property",
-    "named": true
-  },
-  {
     "type": "string_content",
     "named": true
   },

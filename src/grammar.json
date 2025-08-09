@@ -1681,6 +1681,19 @@
         ]
       }
     },
+    "any_identifier": {
+      "type": "ALIAS",
+      "content": {
+        "type": "RESERVED",
+        "content": {
+          "type": "SYMBOL",
+          "name": "identifier"
+        },
+        "context_name": "none"
+      },
+      "named": true,
+      "value": "identifier"
+    },
     "access": {
       "type": "PREC",
       "value": 1,
@@ -1768,7 +1781,7 @@
           "type": "ALIAS",
           "content": {
             "type": "SYMBOL",
-            "name": "identifier"
+            "name": "any_identifier"
           },
           "named": true,
           "value": "property"
@@ -3382,7 +3395,8 @@
   "precedences": [],
   "externals": [],
   "inline": [
-    "parentesized_expression"
+    "parentesized_expression",
+    "any_identifier"
   ],
   "supertypes": [],
   "reserved": {
@@ -3567,6 +3581,7 @@
         "type": "SYMBOL",
         "name": "NULL_KEYWORD"
       }
-    ]
+    ],
+    "none": []
   }
 }
