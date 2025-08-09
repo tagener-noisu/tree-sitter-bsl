@@ -332,6 +332,7 @@ module.exports = grammar({
         $.DO_KEYWORD,
         repeat($._statement),
         $.ENDDO_KEYWORD,
+        optional(';'),
       ),
 
     for_statement: ($) =>

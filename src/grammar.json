@@ -785,6 +785,18 @@
         {
           "type": "SYMBOL",
           "name": "ENDDO_KEYWORD"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "STRING",
+              "value": ";"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
         }
       ]
     },
