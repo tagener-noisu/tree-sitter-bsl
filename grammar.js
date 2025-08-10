@@ -199,14 +199,21 @@ module.exports = grammar({
     none: $ => [],
   },
   rules: {
-    source_file: ($) => repeat($._definition),
+    source_file: ($) =>
+      seq(
+        repeat(prec.left(
+          seq(sepBy1($._semicolon, $.var_definition), $._semicolon)
+        )),
+        repeat($._definition),
+        repeat(prec.right(
+          seq(sepBy1($._semicolon, $._statement), optional($._semicolon))
+        )),
+      ),
 
     _definition: ($) =>
       choice(
         $.procedure_definition,
         $.function_definition,
-        $.var_definition,
-        $._statement,
       ),
 
     procedure_definition: ($) =>
@@ -216,7 +223,8 @@ module.exports = grammar({
         field('name', $.identifier),
         field('parameters', $.parameters),
         optional(field('export', $.EXPORT_KEYWORD)),
-        repeat($._statement),
+        sepBy($._semicolon, $._statement),
+        optional($._semicolon),
         $.ENDPROCEDURE_KEYWORD,
       ),
 
@@ -227,7 +235,8 @@ module.exports = grammar({
         field('name', $.identifier),
         field('parameters', $.parameters),
         optional(field('export', $.EXPORT_KEYWORD)),
-        repeat($._statement),
+        sepBy($._semicolon, $._statement),
+        optional($._semicolon),
         $.ENDFUNCTION_KEYWORD,
       ),
 
@@ -238,7 +247,6 @@ module.exports = grammar({
           $.VAR_KEYWORD,
           sepBy1(',', field('var_name', $.identifier)),
           optional(field('export', $.EXPORT_KEYWORD)),
-          optional(';'),
         ),
       ),
     parameters: ($) => seq('(', commaSep(field('parameter', $.parameter)), ')'),
@@ -275,37 +283,36 @@ module.exports = grammar({
       ),
 
     call_statement: ($) =>
-      seq(choice($.method_call, $.call_expression), optional(';')),
+      seq(choice($.method_call, $.call_expression)),
 
     assignment_statement: ($) =>
       seq(
         field('left', $._assignment_member),
         '=',
         field('right', $.expression),
-        optional(';'),
       ),
 
     return_statement: ($) =>
-      prec.right(seq($.RETURN_KEYWORD, field('result', optional($.expression)), optional(';'))),
+      prec.right(seq($.RETURN_KEYWORD, field('result', optional($.expression)))),
 
     try_statement: ($) =>
       seq(
         $.TRY_KEYWORD,
-        repeat($._statement),
+        sepBy($._semicolon, $._statement),
+        optional($._semicolon),
         $.EXCEPT_KEYWORD,
-        repeat($._statement),
+        sepBy($._semicolon, $._statement),
+        optional($._semicolon),
         $.ENDTRY_KEYWORD,
-        optional(';'),
       ),
 
     rise_error_statement: ($) =>
-      seq($.RAISE_KEYWORD, choice($.arguments, $.expression), optional(';')),
+      seq($.RAISE_KEYWORD, choice($.arguments, $.expression)),
 
     var_statement: ($) =>
       seq(
         $.VAR_KEYWORD,
         sepBy1(',', field('var_name', $.identifier)),
-        optional(';'),
       ),
 
     if_statement: ($) =>
@@ -313,26 +320,36 @@ module.exports = grammar({
         $.IF_KEYWORD,
         $.expression,
         $.THEN_KEYWORD,
-        repeat($._statement),
+        sepBy($._semicolon, $._statement),
+        optional($._semicolon),
         repeat($.elseif_clause),
         optional($.else_clause),
         $.ENDIF_KEYWORD,
-        optional(';'),
       ),
 
     elseif_clause: ($) =>
-      seq($.ELSIF_KEYWORD, $.expression, $.THEN_KEYWORD, repeat($._statement)),
+      seq(
+        $.ELSIF_KEYWORD,
+        $.expression,
+        $.THEN_KEYWORD,
+        sepBy($._semicolon, $._statement),
+        optional($._semicolon),
+      ),
 
-    else_clause: ($) => seq($.ELSE_KEYWORD, repeat($._statement)),
+    else_clause: ($) => seq(
+      $.ELSE_KEYWORD,
+      sepBy($._semicolon, $._statement),
+      optional($._semicolon),
+    ),
 
     while_statement: ($) =>
       seq(
         $.WHILE_KEYWORD,
         $.expression,
         $.DO_KEYWORD,
-        repeat($._statement),
+        sepBy($._semicolon, $._statement),
+        optional($._semicolon),
         $.ENDDO_KEYWORD,
-        optional(';'),
       ),
 
     for_statement: ($) =>
@@ -344,9 +361,9 @@ module.exports = grammar({
         $.TO_KEYWORD,
         $.expression,
         $.DO_KEYWORD,
-        repeat($._statement),
+        sepBy($._semicolon, $._statement),
+        optional($._semicolon),
         $.ENDDO_KEYWORD,
-        optional(';'),
       ),
 
     for_each_statement: ($) =>
@@ -357,24 +374,24 @@ module.exports = grammar({
         $.IN_KEYWORD,
         $.expression,
         $.DO_KEYWORD,
-        repeat($._statement),
+        sepBy($._semicolon, $._statement),
+        optional($._semicolon),
         $.ENDDO_KEYWORD,
-        optional(';'),
       ),
 
-    continue_statement: ($) => seq($.CONTINUE_KEYWORD, optional(';')),
+    continue_statement: ($) => $.CONTINUE_KEYWORD,
 
-    break_statement: ($) => seq($.BREAK_KEYWORD, optional(';')),
+    break_statement: ($) => $.BREAK_KEYWORD,
 
-    execute_statement: ($) => seq(keyword('выполнить', 'execute'), $.expression, optional(';')),
+    execute_statement: ($) => seq(keyword('выполнить', 'execute'), $.expression),
 
     goto_statement: ($) =>
-      seq($.GOTO_KEYWORD, '~', $.identifier, optional(';')),
+      seq($.GOTO_KEYWORD, '~', $.identifier),
 
-    label_statement: ($) => seq('~', $.identifier, ':', optional(';')),
+    label_statement: ($) => seq('~', $.identifier, ':'),
 
     add_handler_statement: ($) =>
-      seq($.ADDHANDLER_KEYWORD, $.expression, ',', $.expression, optional(';')),
+      seq($.ADDHANDLER_KEYWORD, $.expression, ',', $.expression),
 
     remove_handler_statement: ($) =>
       seq(
@@ -382,9 +399,8 @@ module.exports = grammar({
         $.expression,
         ',',
         $.expression,
-        optional(';'),
       ),
-    await_statement: ($) => seq($.await_expression, optional(';')),
+    await_statement: ($) => seq($.await_expression),
 
     // Expressions
     expression: ($) =>
@@ -508,6 +524,8 @@ module.exports = grammar({
     // Primitive
     ...buildKeywords(),
     ...Preprocessor,
+
+    _semicolon: ($) => /;+/,
 
     _const_value: ($) =>
       choice(
